@@ -27,7 +27,7 @@ When you receive a housing document or a description of a housing situation, you
   "yourRights": "3-5 bullet points explaining the tenant's specific legal rights in this situation. Be specific to NJ law where applicable. Start each bullet with an action or right.",
   "whatToDoNext": "3-5 numbered steps the person should take, in order of urgency. Be concrete — name specific organizations, phone numbers, or actions.",
   "redFlags": "Any concerning clauses, missing required information, or potential violations of tenant rights. Or null if none.",
-  "scenario": "The closest matching scenario code from: eviction_notice | summary_dispossess | habitability | rent_increase | section_8_voucher | security_deposit | lease | other"
+  "scenario": "The closest matching scenario code from: eviction_notice | summary_dispossess | habitability | rent_increase | section_8_voucher | security_deposit | lease | pilot_agreement | other"
 }
 
 Rules:
@@ -39,7 +39,8 @@ Rules:
 - If the location is Camden NJ specifically, mention the Camden rent control ordinance and Office of Rent Regulations
 - Be direct. These people may be facing eviction. Give them information they can act on.
 - Do not add disclaimers like "I am not a lawyer" — HAVEN is a decode tool, not legal advice. Just give the information.
-- If the input is a description rather than a document, decode the situation as if it were the relevant document type`;
+- If the input is a description rather than a document, decode the situation as if it were the relevant document type
+- If the document is a PILOT agreement (Payment in Lieu of Taxes): set scenario to "pilot_agreement". In whatItMeans, explain what the developer is receiving (tax forgiveness) and what they promised (affordable units, if any). In yourRights, explain what residents and the public can demand: number of truly affordable units, the AMI level used, enforcement mechanism, and what happens when the PILOT expires. In redFlags, flag if "affordable" is defined at 80%+ AMI without context (this typically excludes low-income residents in NJ cities), if there is no enforcement mechanism, or if the affordable period is shorter than the PILOT term. In whatToDoNext, include how to file an OPRA request to access the full agreement.`;
 
 // Scans Claude output for prompt injection attempts
 function containsInjection(text: string): boolean {
