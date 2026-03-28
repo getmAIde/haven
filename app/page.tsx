@@ -249,7 +249,31 @@ export default function Home() {
     NJ_WAITLISTS.filter((w) => w.county.toLowerCase().includes("camden"))
   );
 
+  // Alert signup state
+  const [alertEmail, setAlertEmail] = useState("");
+  const [alertStatus, setAlertStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [alertError, setAlertError] = useState<string | null>(null);
+
   const resultRef = useRef<HTMLDivElement>(null);
+
+  async function handleAlertSignup() {
+    if (!alertEmail.trim()) return;
+    setAlertStatus("loading");
+    setAlertError(null);
+    try {
+      const res = await fetch("/api/alert", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: alertEmail, county: waitlistCounty }),
+      });
+      const data = await res.json() as { ok?: boolean; error?: string };
+      if (data.error) { setAlertError(data.error); setAlertStatus("error"); }
+      else { setAlertStatus("done"); setAlertEmail(""); }
+    } catch {
+      setAlertError("Something went wrong. Please try again.");
+      setAlertStatus("error");
+    }
+  }
 
   async function handleDecode() {
     if (!input.trim()) return;
@@ -478,20 +502,47 @@ export default function Home() {
               )}
             </div>
 
-            <div className="rounded-xl p-4 text-sm" style={{ background: "var(--card-bg)", border: "1px solid var(--border)" }}>
-              <p className="font-semibold text-white mb-1">Get notified when a waitlist opens</p>
-              <p className="text-slate-400 text-xs leading-relaxed">
-                Housing authorities rarely announce openings far in advance. The best way to stay informed is to check directly with your local housing authority and sign up for their email alerts.
-              </p>
-              <a
-                href="https://www.nj.gov/dca/divisions/dhcr/programs/hcv.html"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block mt-2 text-xs"
-                style={{ color: "var(--accent-light)" }}
-              >
-                NJ DCA Section 8 program →
-              </a>
+            {/* Alert signup */}
+            <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border-accent)" }}>
+              <div className="px-4 py-3" style={{ background: "#1a4a4a55" }}>
+                <p className="font-semibold text-white">Get notified when a waitlist opens</p>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Haven will email you within hours of a Section 8 waitlist opening in Camden County.
+                  No newsletters. Only the alert.
+                </p>
+              </div>
+              {alertStatus === "done" ? (
+                <div className="px-4 py-4" style={{ background: "var(--card-bg)" }}>
+                  <p className="text-sm font-semibold" style={{ color: "var(--accent-light)" }}>
+                    ✓ You&apos;re on the list.
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">Check your email for confirmation. We&apos;ll notify you the moment HACC opens.</p>
+                </div>
+              ) : (
+                <div className="px-4 py-3 flex gap-2" style={{ background: "var(--card-bg)" }}>
+                  <input
+                    type="email"
+                    value={alertEmail}
+                    onChange={(e) => setAlertEmail(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleAlertSignup()}
+                    placeholder="your@email.com"
+                    className="flex-1 rounded-lg px-3 py-2.5 text-sm bg-transparent text-white placeholder-slate-500 focus:outline-none"
+                    style={{ border: "1px solid var(--border)" }}
+                    disabled={alertStatus === "loading"}
+                  />
+                  <button
+                    onClick={handleAlertSignup}
+                    disabled={alertStatus === "loading" || !alertEmail.trim()}
+                    className="px-4 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-40 flex-shrink-0"
+                    style={{ background: "var(--accent)" }}
+                  >
+                    {alertStatus === "loading" ? "…" : "Notify me"}
+                  </button>
+                </div>
+              )}
+              {alertError && (
+                <p className="px-4 pb-3 text-xs text-red-400">{alertError}</p>
+              )}
             </div>
           </div>
         )}
