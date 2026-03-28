@@ -6,6 +6,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest } from "next/server";
+import { checkRateLimit, getClientIp } from "@/lib/ratelimit";
 
 export const runtime = "edge";
 export const maxDuration = 60;
@@ -40,7 +41,33 @@ Rules:
 - Do not add disclaimers like "I am not a lawyer" — HAVEN is a decode tool, not legal advice. Just give the information.
 - If the input is a description rather than a document, decode the situation as if it were the relevant document type`;
 
+// Scans Claude output for prompt injection attempts
+function containsInjection(text: string): boolean {
+  return /\[INST\]|<\|system\|>|ignore previous|disregard (all|your) (previous|prior|above)/i.test(text);
+}
+
 export async function POST(req: NextRequest) {
+  // Cost circuit breaker
+  if (process.env.DECODE_PAUSED === "true") {
+    return new Response(JSON.stringify({ error: "HAVEN is temporarily paused for maintenance. Please try again shortly." }), { status: 503 });
+  }
+
+  // Rate limiting
+  const ip = getClientIp(req);
+  const rl = await checkRateLimit(ip, "decode");
+  if (!rl.allowed) {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "X-RateLimit-Limit": String(rl.limit),
+      "X-RateLimit-Remaining": "0",
+    };
+    if (rl.retryAfter) headers["Retry-After"] = String(rl.retryAfter);
+    return new Response(
+      JSON.stringify({ error: `Too many requests. Please wait ${rl.retryAfter ?? 60} seconds before trying again.` }),
+      { status: 429, headers }
+    );
+  }
+
   let input = "";
   try {
     const body = await req.json() as { input?: string; state?: string };
@@ -89,6 +116,14 @@ export async function POST(req: NextRequest) {
         const jsonMatch = fullText.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
           send({ error: "Could not parse decode response. Try again." });
+          controller.close();
+          return;
+        }
+
+        // Scan output for prompt injection before sending
+        if (containsInjection(fullText)) {
+          console.warn("[haven/decode] injection detected in output, blocking");
+          send({ error: "Could not safely decode this document. Try rephrasing." });
           controller.close();
           return;
         }

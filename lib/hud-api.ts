@@ -46,7 +46,7 @@ export async function getFMRByZip(zip: string): Promise<FMRResult | FMRLookupErr
   try {
     // Get the entity ID from the ZIP code
     const geoRes = await fetch(
-      `${HUD_BASE}/fmr/listCounties/${zip.slice(0, 2)}?api_key=${apiKey}`,
+      `${HUD_BASE}/fmr/listCounties/${zip.slice(0, 2)}`,
       { headers: { Authorization: `Bearer ${apiKey}` } }
     );
     if (!geoRes.ok) throw new Error(`HUD geo lookup failed: ${geoRes.status}`);
@@ -58,7 +58,7 @@ export async function getFMRByZip(zip: string): Promise<FMRResult | FMRLookupErr
     if (!county) return { error: `No FMR data found for ZIP ${zip}` };
 
     const fmrRes = await fetch(
-      `${HUD_BASE}/fmr/statedata/${county.fips_code.slice(0, 2)}?year=2025&api_key=${apiKey}`,
+      `${HUD_BASE}/fmr/statedata/${county.fips_code.slice(0, 2)}?year=2025`,
       { headers: { Authorization: `Bearer ${apiKey}` } }
     );
     if (!fmrRes.ok) throw new Error(`HUD FMR fetch failed: ${fmrRes.status}`);
