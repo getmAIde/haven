@@ -4,6 +4,8 @@ import { useState, useRef } from "react";
 import { NJ_TENANT_RIGHTS, type RightsEntry } from "@/lib/nj-rights";
 import { NJ_WAITLISTS, type WaitlistEntry } from "@/lib/waitlist-data";
 import { formatFMR, type FMRResult } from "@/lib/hud-api";
+import { ERA_PROGRAMS, ERA_FACTS, type ERAProgram } from "@/lib/era-data";
+import { PILOT_EXPLAINER, PILOT_QUESTIONS, CAMDEN_PILOTS, CAMDEN_AMI_CONTEXT } from "@/lib/pilot-data";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -227,7 +229,8 @@ function WaitlistBadge({ entry }: { entry: WaitlistEntry }) {
 // ── Main Page ─────────────────────────────────────────────────────────────
 
 export default function Home() {
-  const [mode, setMode] = useState<"decode" | "waitlist" | "fmr" | "rights">("decode");
+  const [mode, setMode] = useState<"decode" | "waitlist" | "fmr" | "rights" | "help">("decode");
+  const [helpSection, setHelpSection] = useState<"era" | "pilot">("era");
   const [input, setInput] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [result, setResult] = useState<DecodeResult | null>(null);
@@ -346,12 +349,13 @@ export default function Home() {
 
         {/* Mode tabs */}
         <div className="flex gap-1 mb-6 p-1 rounded-xl" style={{ background: "var(--card-bg)", border: "1px solid var(--border)" }}>
-          {(["decode", "waitlist", "fmr", "rights"] as const).map((m) => {
+          {(["decode", "waitlist", "fmr", "rights", "help"] as const).map((m) => {
             const labels: Record<string, string> = {
-              decode: "📄 Decode a document",
-              waitlist: "🔑 Section 8 waitlists",
-              fmr: "💰 Fair Market Rents",
-              rights: "⚖️ Know your rights",
+              decode: "📄 Decode",
+              waitlist: "🔑 Section 8",
+              fmr: "💰 FMR",
+              rights: "⚖️ Rights",
+              help: "🆘 Get help",
             };
             return (
               <button
@@ -614,6 +618,214 @@ export default function Home() {
                 </details>
               );
             })}
+          </div>
+        )}
+
+        {/* ── HELP MODE ── */}
+        {mode === "help" && (
+          <div className="space-y-4">
+            {/* Sub-nav */}
+            <div className="flex gap-2">
+              {(["era", "pilot"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setHelpSection(s)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                  style={
+                    helpSection === s
+                      ? { background: "var(--accent)", color: "white" }
+                      : { background: "var(--card-bg)", color: "var(--muted)", border: "1px solid var(--border)" }
+                  }
+                >
+                  {s === "era" ? "🆘 Emergency rental help" : "🏦 PILOT agreements"}
+                </button>
+              ))}
+            </div>
+
+            {/* ── ERA SECTION ── */}
+            {helpSection === "era" && (
+              <div className="space-y-4">
+                <div className="rounded-xl p-4 text-sm" style={{ background: "var(--card-bg)", border: "1px solid var(--border)" }}>
+                  <p className="font-semibold text-white mb-1">Can't pay rent and facing eviction?</p>
+                  <p className="text-slate-400 leading-relaxed">
+                    Emergency rental assistance (ERA) can pay your back rent and stop an eviction — even one that&apos;s already in court. The key: apply now and tell the court you have a pending application. Judges routinely grant continuances for ERA applicants. Do not wait.
+                  </p>
+                </div>
+
+                {/* Programs */}
+                <div className="space-y-3">
+                  {ERA_PROGRAMS.map((p: ERAProgram) => (
+                    <div key={p.id} className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+                      <div className="px-4 py-3 flex items-center justify-between" style={{ background: p.camdenSpecific ? "#1a4a4a55" : "var(--card-bg)" }}>
+                        <div>
+                          <p className="font-semibold text-white text-sm">{p.name}</p>
+                          <p className="text-xs text-slate-400 mt-0.5">{p.who}{p.camdenSpecific ? " · Camden" : " · NJ statewide"}</p>
+                        </div>
+                        {p.phone && (
+                          <a href={`tel:${p.phone.replace(/[^0-9]/g, "")}`} className="text-sm font-bold flex-shrink-0 ml-3" style={{ color: "var(--accent-light)" }}>
+                            {p.phone}
+                          </a>
+                        )}
+                      </div>
+                      <div className="px-4 py-3 space-y-2" style={{ background: "#0d1420" }}>
+                        <div>
+                          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Who qualifies</span>
+                          <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">{p.eligibility}</p>
+                        </div>
+                        <div>
+                          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">What it covers</span>
+                          <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">{p.maxHelp}</p>
+                        </div>
+                        <div>
+                          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">How to apply</span>
+                          <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">{p.howToApply}</p>
+                        </div>
+                        <div className="flex items-start gap-2 pt-1">
+                          <span className="text-amber-400 text-xs flex-shrink-0">⏱</span>
+                          <p className="text-xs text-amber-300 leading-relaxed">{p.timeToFunds}</p>
+                        </div>
+                        {p.notes && (
+                          <p className="text-xs text-slate-500 leading-relaxed border-t pt-2" style={{ borderColor: "var(--border)" }}>{p.notes}</p>
+                        )}
+                        {p.url && (
+                          <a href={p.url} target="_blank" rel="noopener noreferrer" className="text-xs block mt-1" style={{ color: "var(--accent-light)" }}>
+                            Learn more →
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* ERA Q&A */}
+                <div className="rounded-xl p-4 text-sm" style={{ background: "var(--card-bg)", border: "1px solid var(--border)" }}>
+                  <p className="font-semibold text-white mb-3">Common questions</p>
+                  <div className="space-y-4">
+                    {ERA_FACTS.map((f, i) => (
+                      <details key={i} className="group">
+                        <summary className="cursor-pointer font-medium text-slate-300 text-sm flex items-center justify-between select-none list-none">
+                          <span>{f.q}</span>
+                          <span className="text-slate-600 ml-2 flex-shrink-0 group-open:rotate-180 transition-transform text-xs">▼</span>
+                        </summary>
+                        <p className="text-slate-400 text-xs leading-relaxed mt-2 pl-2 border-l-2" style={{ borderColor: "var(--accent)" }}>{f.a}</p>
+                      </details>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Right to counsel note */}
+                <div className="rounded-xl p-4 text-sm" style={{ background: "#1a4a4a33", border: "1px solid #2d808044" }}>
+                  <p className="font-semibold mb-1" style={{ color: "var(--accent-light)" }}>Right to Counsel — NJ</p>
+                  <p className="text-slate-300 text-xs leading-relaxed">
+                    New Jersey has been expanding right-to-counsel programs for tenants in eviction proceedings. Income-eligible tenants may be entitled to free legal representation in court. Ask Legal Services of NJ (1-888-576-5529) whether your county is covered.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* ── PILOT SECTION ── */}
+            {helpSection === "pilot" && (
+              <div className="space-y-4">
+                {/* Explainer */}
+                <div className="rounded-xl p-4 text-sm" style={{ background: "var(--card-bg)", border: "1px solid var(--border)" }}>
+                  <p className="font-semibold text-white mb-2">What is a PILOT?</p>
+                  <p className="text-slate-400 leading-relaxed text-xs mb-3">{PILOT_EXPLAINER.what}</p>
+                  <p className="text-slate-400 leading-relaxed text-xs mb-3">{PILOT_EXPLAINER.catch}</p>
+                  <p className="text-slate-400 leading-relaxed text-xs">{PILOT_EXPLAINER.camdenContext}</p>
+                </div>
+
+                {/* AMI gap card */}
+                <div className="rounded-xl p-4" style={{ background: "#7f1d1d22", border: "1px solid #ef444433" }}>
+                  <p className="text-xs font-semibold uppercase tracking-widest mb-2 text-red-400">The affordability gap</p>
+                  <p className="text-red-200 text-xs leading-relaxed">{CAMDEN_AMI_CONTEXT.note}</p>
+                  <p className="text-red-300 text-xs leading-relaxed mt-2 font-medium">{CAMDEN_AMI_CONTEXT.implication}</p>
+                </div>
+
+                {/* Camden PILOT inventory */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest mb-2 text-slate-500">Known Camden PILOT projects</p>
+                  <div className="space-y-3">
+                    {CAMDEN_PILOTS.map((p) => (
+                      <div key={p.id} className="rounded-xl p-4 text-xs" style={{ background: "var(--card-bg)", border: "1px solid var(--border)" }}>
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <p className="font-semibold text-white text-sm">{p.name}</p>
+                          <span className="text-xs px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "var(--accent)22", color: "var(--accent-light)", border: "1px solid var(--accent)44" }}>
+                            {p.termYears}yr PILOT
+                          </span>
+                        </div>
+                        <p className="text-slate-400 mb-1">{p.developer} · {p.location}</p>
+                        {p.amiLevel && (
+                          <p className="text-amber-300 mb-1">
+                            <span className="font-semibold">Affordable definition:</span> {p.amiLevel} · {p.camdenAMI2025}
+                          </p>
+                        )}
+                        <p className="text-slate-500 leading-relaxed mt-1">{p.notes}</p>
+                        <p className="text-slate-600 mt-1 italic">Source: {p.source}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Questions to ask */}
+                <div className="rounded-xl p-4" style={{ background: "var(--card-bg)", border: "1px solid var(--border)" }}>
+                  <p className="text-xs font-semibold uppercase tracking-widest mb-3 text-slate-400">Questions to ask about any PILOT</p>
+                  <div className="space-y-4">
+                    {PILOT_QUESTIONS.map((q, i) => (
+                      <details key={i} className="group">
+                        <summary className="cursor-pointer font-medium text-slate-300 text-sm flex items-center justify-between select-none list-none">
+                          <span>{q.q}</span>
+                          <span className="text-slate-600 ml-2 flex-shrink-0 group-open:rotate-180 transition-transform text-xs">▼</span>
+                        </summary>
+                        <p className="text-slate-400 text-xs leading-relaxed mt-2 pl-2 border-l-2" style={{ borderColor: "var(--accent)" }}>{q.a}</p>
+                      </details>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Access records CTA */}
+                <div className="rounded-xl p-4 text-sm" style={{ background: "#1a4a4a33", border: "1px solid #2d808044" }}>
+                  <p className="font-semibold mb-1" style={{ color: "var(--accent-light)" }}>Access PILOT records</p>
+                  <p className="text-slate-300 text-xs leading-relaxed mb-2">
+                    PILOT agreements are public records. File an OPRA request with the Camden City Clerk or the CRDA. Free, must be answered within 7 business days.
+                  </p>
+                  <div className="flex gap-3">
+                    <a href="https://crda.org" target="_blank" rel="noopener noreferrer" className="text-xs" style={{ color: "var(--accent-light)" }}>CRDA →</a>
+                    <a href="https://www.camdennj.gov" target="_blank" rel="noopener noreferrer" className="text-xs" style={{ color: "var(--accent-light)" }}>Camden City →</a>
+                  </div>
+                </div>
+
+                {/* Paste & decode */}
+                <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border-accent)", background: "var(--card-bg)" }}>
+                  <div className="px-4 py-3" style={{ borderBottom: "1px solid var(--border)" }}>
+                    <p className="text-sm font-semibold text-white">Decode a PILOT agreement</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Paste any PILOT text — Haven will extract the affordable housing commitments and flag the gaps.</p>
+                  </div>
+                  <textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Paste PILOT agreement text here…"
+                    rows={5}
+                    className="w-full p-4 text-sm bg-transparent text-white placeholder-slate-500 resize-none focus:outline-none"
+                  />
+                  <div className="flex items-center justify-between px-4 py-3" style={{ borderTop: "1px solid var(--border)" }}>
+                    <p className="text-xs text-slate-500">Decodes via AI — same engine as the document decoder</p>
+                    <button
+                      onClick={() => {
+                        if (input.trim()) {
+                          setMode("decode");
+                          setTimeout(handleDecode, 50);
+                        }
+                      }}
+                      disabled={!input.trim()}
+                      className="px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-40 transition-all"
+                      style={{ background: "var(--accent)" }}
+                    >
+                      Decode →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
