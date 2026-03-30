@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
               Know your housing rights. Haven decodes eviction notices, lease agreements,
               and court filings — free, in plain language.
             </p>
-            <a href="https://haven.getmaide.com" style="color: #4a9e9e; font-size: 14px;">
+            <a href="https://haven.waythrough.app" style="color: #4a9e9e; font-size: 14px;">
               Open Haven →
             </a>
           </div>
