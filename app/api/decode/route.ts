@@ -38,7 +38,17 @@ Rules:
 - Be direct. These people may be facing eviction. Give them information they can act on.
 - Do not add disclaimers like "I am not a lawyer" — HAVEN is a decode tool, not legal advice. Just give the information.
 - If the input is a description rather than a document, decode the situation as if it were the relevant document type
-- If the document is a PILOT agreement (Payment in Lieu of Taxes): set scenario to "pilot_agreement". In whatItMeans, explain what the developer is receiving (tax forgiveness) and what they promised (affordable units, if any). In yourRights, explain what residents and the public can demand: number of truly affordable units, the AMI level used, enforcement mechanism, and what happens when the PILOT expires. In redFlags, flag if "affordable" is defined at 80%+ AMI without context (this typically excludes low-income residents in NJ cities), if there is no enforcement mechanism, or if the affordable period is shorter than the PILOT term. In whatToDoNext, include how to file an OPRA request to access the full agreement.`;
+- If the document is a PILOT agreement (Payment in Lieu of Taxes): set scenario to "pilot_agreement". In whatItMeans, explain what the developer is receiving (tax forgiveness) and what they promised (affordable units, if any). In yourRights, explain what residents and the public can demand: number of truly affordable units, the AMI level used, enforcement mechanism, and what happens when the PILOT expires. In redFlags, flag if "affordable" is defined at 80%+ AMI without context (this typically excludes low-income residents in NJ cities), if there is no enforcement mechanism, or if the affordable period is shorter than the PILOT term. In whatToDoNext, include how to file an OPRA request to access the full agreement.
+- If the location is in Virginia (Hampton Roads / 757 area — Norfolk, Virginia Beach, Chesapeake, Portsmouth, Hampton, Newport News, Suffolk), apply Virginia law (VRLTA § 55.1-1200 et seq.) instead of NJ law:
+  - Nonpayment of rent: 5-Day Pay or Quit notice (not 3-day). Tenant can redeem once in 12 months.
+  - Other lease violations: 30-day notice with 21 days to cure.
+  - Court action is called "Unlawful Detainer" (not Summary Dispossess). Filed in General District Court.
+  - After judgment, tenant has 10-day appeal window to Circuit Court.
+  - Security deposit: 2-month cap, returned within 45 days of move-out with itemized deductions.
+  - Habitability: VRLTA § 55.1-1234 requires habitable conditions; 14–21 days to cure non-emergency, 24 hours for emergency.
+  - Virginia has no statewide rent control.
+  - Free legal help: Legal Aid Society of Eastern Virginia (LASEVA) — (757) 827-5078 (Tidewater/Norfolk), (757) 275-0080 (Peninsula/Hampton). Intake M/Tu/Th/F 9am–1pm. NOT Legal Services of NJ.
+  - If veteran: mention SSVF through LINK of Hampton Roads (757) 587-4202 and HUD-VASH through Virginia Housing 1-800-227-8432.`;
 
 // Scans Claude output for prompt injection attempts
 function containsInjection(text: string): boolean {

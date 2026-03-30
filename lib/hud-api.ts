@@ -29,7 +29,7 @@ export interface FMRLookupError {
 export async function getFMRByZip(zip: string): Promise<FMRResult | FMRLookupError> {
   const apiKey = process.env.HUD_USER_API_KEY;
   if (!apiKey) {
-    // Return Camden County 2025 FMRs as fallback when no key is configured
+    // Camden County NJ (ZIPs 081xx) — 2025 FMRs
     if (zip.startsWith("081")) {
       return {
         zip,
@@ -37,6 +37,20 @@ export async function getFMRByZip(zip: string): Promise<FMRResult | FMRLookupErr
         stateName: "New Jersey",
         year: 2025,
         fmr: { efficiency: 897, oneBedroom: 1078, twoBedroom: 1289, threeBedroom: 1601, fourBedroom: 1877 },
+        smallAreaFMR: false,
+      };
+    }
+    // Hampton Roads Virginia — Norfolk-VA Beach-Newport News HUD Metro FMR Area
+    // Covers: Norfolk (235xx), Virginia Beach (234xx), Chesapeake (233xx),
+    //         Hampton/Newport News (236xx), Portsmouth (237xx), Suffolk (234xx)
+    const prefix3 = zip.slice(0, 3);
+    if (["233", "234", "235", "236", "237"].includes(prefix3)) {
+      return {
+        zip,
+        countyName: "Norfolk-Virginia Beach-Newport News Metro Area",
+        stateName: "Virginia",
+        year: 2025,
+        fmr: { efficiency: 1132, oneBedroom: 1266, twoBedroom: 1497, threeBedroom: 1900, fourBedroom: 2199 },
         smallAreaFMR: false,
       };
     }

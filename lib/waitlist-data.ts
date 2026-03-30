@@ -124,13 +124,116 @@ export const NJ_WAITLISTS: WaitlistEntry[] = [
   },
 ];
 
+// ── Hampton Roads / 757 Virginia ─────────────────────────────────────────────
+
+export const VA_757_WAITLISTS: WaitlistEntry[] = [
+  {
+    id: "nrha-hcv",
+    pha: "Norfolk Redevelopment and Housing Authority (NRHA)",
+    city: "Norfolk",
+    county: "Norfolk",
+    state: "VA",
+    status: "closed",
+    program: "HCV",
+    lastUpdated: "2026-03-30",
+    lastOpened: "2024-03-01",
+    notes: "Largest housing authority in Virginia — 13,000+ residents. HCV waitlist was last open March 2024. Monitor nrha.us for reopening.",
+    applyUrl: "https://nrha.us/housing/apply/waitlists/",
+    phone: "(757) 623-1111",
+  },
+  {
+    id: "nrha-ph",
+    pha: "Norfolk Redevelopment and Housing Authority (NRHA)",
+    city: "Norfolk",
+    county: "Norfolk",
+    state: "VA",
+    status: "closed",
+    program: "Public Housing",
+    lastUpdated: "2026-03-30",
+    notes: "Public housing waitlist closed. NRHA manages 16 neighborhoods. Contact NRHA to be added to notification list.",
+    applyUrl: "https://nrha.us/housing/apply/waitlists/",
+    phone: "(757) 664-4486",
+  },
+  {
+    id: "hrha-hcv",
+    pha: "Hampton Redevelopment and Housing Authority (HRHA)",
+    city: "Hampton",
+    county: "Hampton",
+    state: "VA",
+    status: "closed",
+    program: "HCV",
+    lastUpdated: "2026-03-30",
+    notes: "HCV waitlist closed. Contact HRHA to be added to notification list when waitlist reopens.",
+    applyUrl: "http://www.hamptonrha.com",
+    phone: "(757) 727-1111",
+  },
+  {
+    id: "nnrha-hcv",
+    pha: "Newport News Redevelopment & Housing Authority (NNRHA)",
+    city: "Newport News",
+    county: "Newport News",
+    state: "VA",
+    status: "unknown",
+    program: "HCV",
+    lastUpdated: "2026-03-30",
+    notes: "3,068 vouchers administered. Waitlist status unconfirmed — check nnrha.net or call directly for current status. Senior properties include Ashe Manor and Pinecroft Apartments (140-unit senior high-rise).",
+    applyUrl: "https://nnrha.net",
+    phone: "(757) 928-2644",
+  },
+  {
+    id: "prha-hcv",
+    pha: "Portsmouth Redevelopment and Housing Authority (PRHA)",
+    city: "Portsmouth",
+    county: "Portsmouth",
+    state: "VA",
+    status: "closed",
+    program: "HCV",
+    lastUpdated: "2026-03-30",
+    notes: "HCV waitlist closed. Contact PRHA for notification when waitlist reopens.",
+    applyUrl: "https://www.prha.net",
+    phone: "(757) 399-5261",
+  },
+  {
+    id: "vb-housing-hcv",
+    pha: "Virginia Beach Housing and Neighborhood Preservation",
+    city: "Virginia Beach",
+    county: "Virginia Beach",
+    state: "VA",
+    status: "closed",
+    program: "HCV",
+    lastUpdated: "2026-03-30",
+    notes: "HCV waitlist closed. Virginia Beach runs housing through a city department (no standalone housing authority). Housing Resource Center walk-in: 104 N. Witchduck Road, M/Tu/Th/F 8am–noon.",
+    applyUrl: "https://housing.virginiabeach.gov",
+    phone: "(757) 385-4847",
+  },
+  {
+    id: "virginia-housing-hcv",
+    pha: "Virginia Housing (State HCV Program)",
+    city: "Statewide",
+    county: "Multiple",
+    state: "VA",
+    status: "unknown",
+    program: "HCV",
+    lastUpdated: "2026-03-30",
+    notes: "Virginia Housing administers HCV regionally across the state. Check website for current regional waitlist status. Also administers HUD-VASH vouchers for veterans in coordination with the Hampton VAMC.",
+    applyUrl: "https://www.virginiahousing.com/en/renters/housing-choice-voucher-program",
+    phone: "1-800-227-8432",
+  },
+];
+
+export const ALL_WAITLISTS: WaitlistEntry[] = [...NJ_WAITLISTS, ...VA_757_WAITLISTS];
+
 export function getWaitlistsByCounty(county: string, state = "NJ"): WaitlistEntry[] {
   const q = county.toLowerCase();
-  return NJ_WAITLISTS.filter(
+  return ALL_WAITLISTS.filter(
     (w) => w.state === state && (w.county.toLowerCase().includes(q) || w.city.toLowerCase().includes(q))
   );
 }
 
+export function getWaitlistsByRegion(region: "nj" | "757"): WaitlistEntry[] {
+  return region === "nj" ? NJ_WAITLISTS : VA_757_WAITLISTS;
+}
+
 export function getAllWaitlists(): WaitlistEntry[] {
-  return NJ_WAITLISTS;
+  return ALL_WAITLISTS;
 }

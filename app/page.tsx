@@ -2,10 +2,13 @@
 
 import { useState, useRef } from "react";
 import { NJ_TENANT_RIGHTS, type RightsEntry } from "@/lib/nj-rights";
-import { NJ_WAITLISTS, type WaitlistEntry } from "@/lib/waitlist-data";
+import { VA_TENANT_RIGHTS } from "@/lib/va-rights";
+import { NJ_WAITLISTS, VA_757_WAITLISTS, type WaitlistEntry } from "@/lib/waitlist-data";
 import { formatFMR, type FMRResult } from "@/lib/hud-api";
-import { ERA_PROGRAMS, ERA_FACTS, type ERAProgram } from "@/lib/era-data";
+import { ERA_PROGRAMS, getERAByRegion, ERA_FACTS, type ERAProgram } from "@/lib/era-data";
 import { PILOT_EXPLAINER, PILOT_QUESTIONS, CAMDEN_PILOTS, CAMDEN_AMI_CONTEXT } from "@/lib/pilot-data";
+
+type Region = "nj" | "757";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -230,6 +233,7 @@ function WaitlistBadge({ entry }: { entry: WaitlistEntry }) {
 
 export default function Home() {
   const [mode, setMode] = useState<"decode" | "waitlist" | "fmr" | "rights" | "help">("decode");
+  const [region, setRegion] = useState<Region>("nj");
   const [helpSection, setHelpSection] = useState<"era" | "pilot">("era");
   const [input, setInput] = useState("");
   const [status, setStatus] = useState<string | null>(null);
@@ -248,6 +252,10 @@ export default function Home() {
   const [waitlistResults, setWaitlistResults] = useState<WaitlistEntry[]>(
     NJ_WAITLISTS.filter((w) => w.county.toLowerCase().includes("camden"))
   );
+
+  const activeWaitlists = region === "nj" ? NJ_WAITLISTS : VA_757_WAITLISTS;
+  const activeTenantRights = region === "nj" ? NJ_TENANT_RIGHTS : VA_TENANT_RIGHTS;
+  const activeERAPrograms = getERAByRegion(region);
 
   // Alert signup state
   const [alertEmail, setAlertEmail] = useState("");
@@ -341,7 +349,7 @@ export default function Home() {
   function handleWaitlistSearch() {
     const q = waitlistCounty.toLowerCase().trim();
     setWaitlistResults(
-      NJ_WAITLISTS.filter((w) =>
+      activeWaitlists.filter((w) =>
         w.county.toLowerCase().includes(q) ||
         w.city.toLowerCase().includes(q) ||
         w.pha.toLowerCase().includes(q)
@@ -360,8 +368,30 @@ export default function Home() {
           </div>
           <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>Know your housing rights</p>
         </div>
-        <div className="text-xs px-2 py-1 rounded" style={{ background: "#1a4a4a55", color: "var(--accent-light)", border: "1px solid #2d808044" }}>
-          NJ · Free
+        {/* Region toggle */}
+        <div className="flex gap-1 p-0.5 rounded-lg" style={{ background: "var(--card-bg)", border: "1px solid var(--border)" }}>
+          {(["nj", "757"] as const).map((r) => (
+            <button
+              key={r}
+              onClick={() => {
+                setRegion(r);
+                setWaitlistCounty(r === "nj" ? "Camden" : "Norfolk");
+                setWaitlistResults(
+                  (r === "nj" ? NJ_WAITLISTS : VA_757_WAITLISTS).filter((w) =>
+                    w.city.toLowerCase().includes(r === "nj" ? "camden" : "norfolk")
+                  )
+                );
+              }}
+              className="text-xs px-3 py-1.5 rounded-md font-semibold transition-all"
+              style={
+                region === r
+                  ? { background: "var(--accent)", color: "white" }
+                  : { color: "var(--muted)" }
+              }
+            >
+              {r === "nj" ? "NJ" : "757"}
+            </button>
+          ))}
         </div>
       </header>
 
@@ -469,9 +499,15 @@ export default function Home() {
           <div className="space-y-4">
             <div className="rounded-xl p-4" style={{ background: "#7f1d1d22", border: "1px solid #ef444433" }}>
               <p className="text-sm text-red-200 leading-relaxed">
-                <strong className="text-red-300">Camden County has 0 open Section 8 waiting lists</strong> as of March 2026.
-                The Housing Authority of the City of Camden&apos;s waitlist opened and closed on the same day in March 2025.
-                Sign up for alerts so you don&apos;t miss the next opening.
+                {region === "nj" ? (
+                  <><strong className="text-red-300">Camden County has 0 open Section 8 waiting lists</strong> as of March 2026.
+                  The Housing Authority of the City of Camden&apos;s waitlist opened and closed on the same day in March 2025.
+                  Sign up for alerts so you don&apos;t miss the next opening.</>
+                ) : (
+                  <><strong className="text-red-300">Hampton Roads PHAs have limited open waitlists</strong> as of March 2026.
+                  NRHA (Norfolk) last opened March 2024. Most city-level HCV waitlists are closed.
+                  Sign up for alerts — we&apos;ll notify you the moment one opens.</>
+                )}
               </p>
             </div>
 
@@ -480,7 +516,7 @@ export default function Home() {
                 type="text"
                 value={waitlistCounty}
                 onChange={(e) => setWaitlistCounty(e.target.value)}
-                placeholder="County or city (e.g. Camden, Essex, Hudson)"
+                placeholder={region === "nj" ? "County or city (e.g. Camden, Essex, Hudson)" : "City (e.g. Norfolk, Hampton, Virginia Beach)"}
                 className="flex-1 rounded-lg px-4 py-2.5 text-sm bg-transparent text-white placeholder-slate-500 focus:outline-none"
                 style={{ border: "1px solid var(--border)" }}
                 onKeyDown={(e) => e.key === "Enter" && handleWaitlistSearch()}
@@ -507,8 +543,9 @@ export default function Home() {
               <div className="px-4 py-3" style={{ background: "#1a4a4a55" }}>
                 <p className="font-semibold text-white">Get notified when a waitlist opens</p>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Haven will email you within hours of a Section 8 waitlist opening in Camden County.
-                  No newsletters. Only the alert.
+                  {region === "nj"
+                    ? "Haven will email you within hours of a Section 8 waitlist opening in Camden County. No newsletters. Only the alert."
+                    : "Haven will email you within hours of a Section 8 waitlist opening in Hampton Roads. No newsletters. Only the alert."}
                 </p>
               </div>
               {alertStatus === "done" ? (
@@ -516,7 +553,11 @@ export default function Home() {
                   <p className="text-sm font-semibold" style={{ color: "var(--accent-light)" }}>
                     ✓ You&apos;re on the list.
                   </p>
-                  <p className="text-xs text-slate-400 mt-1">Check your email for confirmation. We&apos;ll notify you the moment HACC opens.</p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {region === "nj"
+                      ? "Check your email for confirmation. We'll notify you the moment HACC opens."
+                      : "Check your email for confirmation. We'll notify you when a Hampton Roads waitlist opens."}
+                  </p>
                 </div>
               ) : (
                 <div className="px-4 py-3 flex gap-2" style={{ background: "var(--card-bg)" }}>
@@ -578,14 +619,30 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Quick Camden button */}
-            <button
-              onClick={() => { setFmrZip("08103"); setTimeout(handleFMRLookup, 50); }}
-              className="text-xs px-3 py-1.5 rounded-full"
-              style={{ background: "var(--card-bg)", border: "1px solid var(--border)", color: "var(--muted)" }}
-            >
-              Try: 08103 (Camden, NJ)
-            </button>
+            {/* Quick-try buttons */}
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => { setFmrZip("08103"); setTimeout(handleFMRLookup, 50); }}
+                className="text-xs px-3 py-1.5 rounded-full"
+                style={{ background: "var(--card-bg)", border: "1px solid var(--border)", color: "var(--muted)" }}
+              >
+                Try: 08103 (Camden, NJ)
+              </button>
+              <button
+                onClick={() => { setFmrZip("23503"); setTimeout(handleFMRLookup, 50); }}
+                className="text-xs px-3 py-1.5 rounded-full"
+                style={{ background: "var(--card-bg)", border: "1px solid var(--border)", color: "var(--muted)" }}
+              >
+                Try: 23503 (Norfolk, VA)
+              </button>
+              <button
+                onClick={() => { setFmrZip("23601"); setTimeout(handleFMRLookup, 50); }}
+                className="text-xs px-3 py-1.5 rounded-full"
+                style={{ background: "var(--card-bg)", border: "1px solid var(--border)", color: "var(--muted)" }}
+              >
+                Try: 23601 (Newport News, VA)
+              </button>
+            </div>
 
             {fmrError && (
               <div className="p-4 rounded-xl text-sm text-red-300" style={{ background: "#7f1d1d22", border: "1px solid #ef444433" }}>
@@ -624,11 +681,15 @@ export default function Home() {
         {/* ── RIGHTS MODE ── */}
         {mode === "rights" && (
           <div className="space-y-3">
-            <p className="text-xs text-slate-400 mb-4">Tap any situation to see your rights under New Jersey law, with Camden-specific notes where they apply.</p>
-            {NJ_TENANT_RIGHTS.map((entry) => {
+            <p className="text-xs text-slate-400 mb-4">
+              {region === "nj"
+                ? "Tap any situation to see your rights under New Jersey law, with Camden-specific notes where they apply."
+                : "Tap any situation to see your rights under Virginia law (VRLTA), with Hampton Roads–specific contacts."}
+            </p>
+            {activeTenantRights.map((entry) => {
               const labels: Record<string, string> = {
                 eviction_notice: "⚠️ I got an eviction notice",
-                summary_dispossess: "🏛️ I got a court summons (Summary Dispossess)",
+                summary_dispossess: region === "nj" ? "🏛️ I got a court summons (Summary Dispossess)" : "🏛️ I got an Unlawful Detainer summons",
                 habitability: "🔥 My landlord won't fix problems in my unit",
                 rent_increase: "💸 My rent just went up",
                 section_8_voucher: "🔑 I have a Section 8 voucher",
@@ -677,7 +738,7 @@ export default function Home() {
           <div className="space-y-4">
             {/* Sub-nav */}
             <div className="flex gap-2">
-              {(["era", "pilot"] as const).map((s) => (
+              {((region === "nj" ? ["era", "pilot"] : ["era"]) as ("era" | "pilot")[]).map((s) => (
                 <button
                   key={s}
                   onClick={() => setHelpSection(s)}
@@ -705,12 +766,15 @@ export default function Home() {
 
                 {/* Programs */}
                 <div className="space-y-3">
-                  {ERA_PROGRAMS.map((p: ERAProgram) => (
+                  {activeERAPrograms.map((p: ERAProgram) => (
                     <div key={p.id} className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
                       <div className="px-4 py-3 flex items-center justify-between" style={{ background: p.camdenSpecific ? "#1a4a4a55" : "var(--card-bg)" }}>
                         <div>
                           <p className="font-semibold text-white text-sm">{p.name}</p>
-                          <p className="text-xs text-slate-400 mt-0.5">{p.who}{p.camdenSpecific ? " · Camden" : " · NJ statewide"}</p>
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            {p.who}
+                            {p.camdenSpecific ? " · Camden" : p.region === "757" ? " · Hampton Roads" : " · NJ statewide"}
+                          </p>
                         </div>
                         {p.phone && (
                           <a href={`tel:${p.phone.replace(/[^0-9]/g, "")}`} className="text-sm font-bold flex-shrink-0 ml-3" style={{ color: "var(--accent-light)" }}>
@@ -766,10 +830,23 @@ export default function Home() {
 
                 {/* Right to counsel note */}
                 <div className="rounded-xl p-4 text-sm" style={{ background: "#1a4a4a33", border: "1px solid #2d808044" }}>
-                  <p className="font-semibold mb-1" style={{ color: "var(--accent-light)" }}>Right to Counsel — NJ</p>
-                  <p className="text-slate-300 text-xs leading-relaxed">
-                    New Jersey has been expanding right-to-counsel programs for tenants in eviction proceedings. Income-eligible tenants may be entitled to free legal representation in court. Ask Legal Services of NJ (1-888-576-5529) whether your county is covered.
-                  </p>
+                  {region === "nj" ? (
+                    <>
+                      <p className="font-semibold mb-1" style={{ color: "var(--accent-light)" }}>Right to Counsel — NJ</p>
+                      <p className="text-slate-300 text-xs leading-relaxed">
+                        New Jersey has been expanding right-to-counsel programs for tenants in eviction proceedings. Income-eligible tenants may be entitled to free legal representation in court. Ask Legal Services of NJ (1-888-576-5529) whether your county is covered.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-semibold mb-1" style={{ color: "var(--accent-light)" }}>Free Legal Help — Hampton Roads</p>
+                      <p className="text-slate-300 text-xs leading-relaxed">
+                        LASEVA provides free civil legal services to low-income residents of Hampton Roads (income ≤ 125% FPL). Covers eviction defense, housing rights, and benefits.
+                        Tidewater office: (757) 827-5078 · Peninsula (Hampton): (757) 275-0080.
+                        Intake: M/Tu/Th/F 9am–1pm.
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             )}
