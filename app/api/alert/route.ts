@@ -9,14 +9,13 @@ import { Resend } from "resend";
 
 export const runtime = "edge";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 // Resend segment for Section 8 waitlist alerts
 const ALERT_SEGMENT_ID = "f731173e-a5c8-449c-aaed-71c9c3563f58";
 
 const EMAIL_REGEXP = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: NextRequest) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   let email = "";
   let county = "Camden";
   try {

@@ -11,8 +11,6 @@ import { checkRateLimit, getClientIp } from "@/lib/ratelimit";
 export const runtime = "edge";
 export const maxDuration = 60;
 
-const client = new Anthropic();
-
 const SYSTEM_PROMPT = `You are HAVEN, a housing document decoder. Your job is to translate housing documents into plain language that any tenant can understand — no legal training required.
 
 You specialize in New Jersey landlord-tenant law but can handle documents from any US state.
@@ -81,6 +79,7 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: "No document or description provided" }), { status: 400 });
   }
 
+  const client = new Anthropic();
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
