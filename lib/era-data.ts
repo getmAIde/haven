@@ -57,7 +57,7 @@ export const ERA_PROGRAMS: ERAProgram[] = [
       "Camden County residents in emergency financial hardship. Open to all regardless of religion or immigration status.",
     maxHelp: "One-time emergency rental assistance (amount varies by available funding). Can sometimes prevent a warrant for removal when other options are exhausted.",
     howToApply: "Call to schedule an intake appointment. Bring ID, lease, and evidence of hardship (eviction notice, past-due bills).",
-    phone: "(856) 583-3100",
+    phone: "(856) 342-4100",
     timeToFunds: "Usually within a week for emergency cases.",
     camdenSpecific: true,
   },

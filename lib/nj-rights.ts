@@ -55,9 +55,9 @@ export const NJ_TENANT_RIGHTS: RightsEntry[] = [
   {
     scenario: "section_8_voucher",
     plain: "A Housing Choice Voucher (Section 8) helps you pay rent. Your voucher covers the difference between your share (usually 30% of your income) and the fair market rent for your area. Your landlord must maintain the unit to HUD housing quality standards — if they don't, the Housing Authority can stop payments. You have the right to request a hearing if your voucher is reduced or terminated. You can also move to a new unit and keep your voucher ('portability') — contact your Housing Authority for details.",
-    camdenNote: "The Housing Authority of the City of Camden (HACC) administers Section 8 in Camden. If your unit failed a HUD inspection, you are entitled to know the specific violations. A HUD OIG audit found 16 of 17 Camden Section 8 units failed standards — many tenants were never told. Contact HACC at (856) 966-2120.",
+    camdenNote: "The Housing Authority of the City of Camden (HACC) administers Section 8 in Camden. If your unit failed a HUD inspection, you are entitled to know the specific violations. A HUD OIG audit found 16 of 17 Camden Section 8 units failed standards — many tenants were never told. Contact HACC at (856) 968-4100.",
     contacts: [
-      { name: "Housing Authority City of Camden", phone: "(856) 966-2120", url: "https://camdenhousing.org" },
+      { name: "Housing Authority City of Camden", phone: "(856) 968-4100", url: "https://camdenhousing.org" },
       { name: "NJ DCA Housing Choice Voucher", url: "https://www.nj.gov/dca/divisions/dhcr/programs/hcv.html" },
       { name: "HUD Tenant Rights", url: "https://www.hud.gov/topics/rental_assistance/tenantrights" },
     ],

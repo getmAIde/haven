@@ -34,7 +34,7 @@ export const NJ_WAITLISTS: WaitlistEntry[] = [
     lastOpened: "2025-03-21",
     notes: "Waitlist opened and closed the same day on March 21, 2025. No reopening date announced. Currently serves 2,098 vouchers across 2,794 households.",
     applyUrl: "https://camdenhousing.org/admissions/",
-    phone: "(856) 966-2120",
+    phone: "(856) 968-4100",
   },
   {
     id: "hacc-ph",
@@ -47,7 +47,7 @@ export const NJ_WAITLISTS: WaitlistEntry[] = [
     lastUpdated: "2026-03-28",
     notes: "Public housing waitlist closed. Contact HACC to be added to notification list.",
     applyUrl: "https://camdenhousing.org/admissions/",
-    phone: "(856) 966-2120",
+    phone: "(856) 968-4100",
   },
   {
     id: "njdca-hcv",
